@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление курса{% endblock %}
+
+{% block content %}
+  <h1>Удаление курса</h1>
+  <div class="module">
+    <form action="" method="post">
+      {% csrf_token %}
+      <p>Вы уверены в удалении данного курса "{{ object.title }}"?</p>
+      <input type="submit" value="Подтвердить">
+    </form>
+  </div>
+{% endblock %}
