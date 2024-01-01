@@ -8,9 +8,14 @@
     {% for course in object_list %}  <!-- список объектов, встроен в представления на основе классов -->
       <div class="course-info">
         <h3>{{ course.title }}</h3>
+        <p>{{ course.overview }}</p>
         <p>
-          <a href="{% url 'course_edit' course.id %}">Редактировать</a>  <!-- url берутся из urls name='..' -->
+          <a href="{% url 'course_edit' course.id %}">Редактировать</a> <!-- url берутся из urls name='..' -->
           <a href="{% url 'course_delete' course.id %}">Удалить</a>
+          <a href="{% url 'course_module_update' course.id %}">Редактировать модули</a> <!-- id передаем в dispatch -->
+          {% if course.modules.count > 0 %}
+            <a href="{% url 'module_content_list' course.modules.first.id %}">Содержимое модуля</a> <!-- Обращаемся по related_name`у модели Module объекта course -->
+          {% endif %}
         </p>
       </div>
     {% empty %}

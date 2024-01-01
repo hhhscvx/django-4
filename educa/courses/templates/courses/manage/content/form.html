@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if object %}
+    Редактирование содержимого "{{ object.title }}"
+  {% else %}
+    Добавление содержимого
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <h1>
+    {% if object %}
+      Редактирование содержимого "{{ object.title }}"
+    {% else %}
+      Добавление содержимого
+    {% endif %}
+  </h1>
+  <div class="module">
+    <h2>Информация о курсе</h2>
+    <form action="" method="post" enctype="multipart/form-data">  <!-- action - данные формы будут отправляться на этот же шаблон (т.к. мы и редачим тут и создаем); enctype такой чтобы можно было загружать файлы -->
+      {{ form.as_p }}
+      {% csrf_token %}
+      <p><input type="submit" value="Сохранить"></p>
+    </form>
+  </div>
+{% endblock %}

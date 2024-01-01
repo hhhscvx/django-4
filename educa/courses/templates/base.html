@@ -21,6 +21,8 @@
     {% block content %}
     {% endblock %}
   </div>
+  {% block include_js %}  <!-- чтобы вставлять файлы JavaScript в любой дочерний шаблон -->
+  {% endblock %}
   <script>
     document.addEventListener('DOMContentLoaded', (event) => {
       {% block domready %}

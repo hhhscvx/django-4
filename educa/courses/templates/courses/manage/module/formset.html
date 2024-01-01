@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование "{{ course.title }}"{% endblock %}
+
+{% block content %}
+  <h1>Редактирование курса "{{ course.title }}"</h1>
+  <div class="module">
+    <h2>Модули курса</h2>
+    <form method="post">
+      {{ formset }}
+      {{ formset.management_form }}  <!-- короче это надо при формсетах -->
+      {% csrf_token %}
+      <input type="submit" value="Сохранить">
+    </form>
+  </div>
+{% endblock %}

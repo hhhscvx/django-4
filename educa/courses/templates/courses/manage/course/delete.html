@@ -7,7 +7,7 @@
   <div class="module">
     <form action="" method="post">
       {% csrf_token %}
-      <p>Вы уверены в удалении данного курса "{{ object.title }}"?</p>
+      <p>Вы уверены в удалении курса "{{ object.title }}"?</p>
       <input type="submit" value="Подтвердить">
     </form>
   </div>

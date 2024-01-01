@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load course %}
+
+{% block title %}
+  Модуль {{ module.order|add:1 }}: {{ module.title }}  <!-- Модуль n: module.title -->
+{% endblock %}
+
+{% block content %}
+{% with course=module.course %}
+  <h1>Курс "{{ course.title }}"</h1>
+  <div class="contents">
+    <h3>Модули</h3>
+    <ul id="modules">
+      {% for m in course.modules.all %}
+        <li data-id="{{ m.id }}" {% if m == module %}class="selected"{% endif %}>
+          <a href="{% url 'module_content_list' m.id %}">
+            <span>
+              Модуль <span class="order">{{ m.order|add:1 }}</span>
+            </span>
+            <br>
+            {{ m.title }}
+          </a>
+        </li>
+      {% empty %}
+        <li>Модулей пока нет.</li>
+      {% endfor %}
+    </ul>
+    <p><a href="{% url 'course_module_update' course.id %}">
+    Редактировать модуль</a></p>
+  </div>
+  <div class="module">
+    <h2>Модуль {{ module.order|add:1 }}: {{ module.title }}</h2>
+    <h3>Содержимое модуля:</h3>
+    <div id="module-contents">
+      {% for content in module.contents.all %}
+        <div data-id="{{ content.id }}">
+          {% with item=content.item %}
+            <p>{{ item }} ({{ item|model_name|capfirst }})</p>
+            <a href="{% url 'module_content_update' module.id item|model_name item.id %}">  <!-- Передаем module_id model_name контента и id контента -->
+              Редактировать
+            </a>
+            <form action="{% url 'module_content_delete' content.id %}" method="post">
+              <input type="submit" value="Удалить">
+              {% csrf_token %}
+            </form>
+            {% endwith %}
+        </div>
+      {% empty %}
+        <p>В этом модуле пока пусто.</p>
+      {% endfor %}
+    </div>
+    <h3>Добавить содержимое:</h3>
+    <ul class="content-types">
+      <li>
+        <a href="{% url 'module_content_create' module.id 'text' %}">Текст</a>  <!-- передаем в 'module_content_create' module_id и model_name -->
+      </li>
+      <li>
+        <a href="{% url 'module_content_create' module.id 'image' %}">Изображение</a>
+      </li>
+      <li>
+        <a href="{% url 'module_content_create' module.id 'video' %}">Видео</a>
+      </li>
+      <li>
+        <a href="{% url 'module_content_create' module.id 'file' %}">Файл</a>
+      </li>
+    </ul>
+  </div>
+{% endwith %}
+{% endblock %}
+
+{% block include_js %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.13.3/html5sortable.min.js"></script>  <!-- Загружаем библиотеку html5sortable -->
+{% endblock %}
+
+{% block domready %}  <!-- options - настроки запроса: post и отправляются на ту же страницу, где выполняется действие; sortable применяется к id="modules" - контейнер всех модулей -->
+  var options = {
+    method: 'POST',
+    mode: 'same-origin'
+  }
+
+  const moduleOrderUrl = '{% url "module_order" %}';
+
+  sortable('#modules', {
+    forcePlaceholderSize: true,
+    placeholderClass: 'placeholder'
+  })[0].addEventListener('sortupdate', function(e) {
+
+    modulesOrder = {};
+    var modules = document.querySelectorAll('#modules li');
+    modules.forEach(function (module, index) {
+    // обновить индекс модуля (modules это все модули)
+    modulesOrder[module.dataset.id] = index;
+    // обновить индекс в HTML-элементе
+    module.querySelector('.order').innerHTML = index + 1;
+    // добавить новый порядок в опции HTTP-запроса
+    options['body'] = JSON.stringify(modulesOrder);
+
+    // отправить http-запрос
+    fetch(moduleOrderUrl, options)
+  });
+});
+
+  const contentOrderUrl = '{% url "content_order" %}';
+
+  sortable('#module-contents', {
+    forcePlaceholderSize: true,
+    placeholderClass: 'placeholder'
+  })[0].addEventListener('sortupdate', function(e) {
+
+    contentOrder = {};
+    var contents = document.querySelectorAll('#module-contents div');
+    contents.forEach(function (content, index) {
+      // update content index
+      contentOrder[content.dataset.id] = index;
+      // add new order to the HTTP request options
+      options['body'] = JSON.stringify(contentOrder);
+
+      // send HTTP request
+      fetch(contentOrderUrl, options)
+    });
+  });
+
+{% endblock %}  <!-- устанавливаем что у элемента местозаместителя есть свой размер и css класс -->
