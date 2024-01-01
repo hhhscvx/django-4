@@ -10,6 +10,9 @@ from .models import Module, Content
 from django.forms.models import modelform_factory
 from django.apps import apps
 from braces.views import CsrfExemptMixin, JsonRequestResponseMixin
+from django.db.models import Count
+from .models import Subject
+from django.views.generic.detail import DetailView
 
 
 class OwnerMixin:  # mixin owner`а
@@ -54,7 +57,7 @@ class CourseDeleteView(OwnerCourseMixin, DeleteView):
     permission_required = 'courses.delete_course'
 
 
-class CourseModuleUpdateView(TemplateResponseMixin,  # прорисовка шаблона и возврат http-ответа.
+class CourseModuleUpdateView(TemplateResponseMixin,  # Возможность возвращать ответы в шаблонах
                              View):  # то что CourseModuleUpdateView - представление
     template_name = 'courses/manage/module/formset.html'  # шаблон с формой
     course = None
@@ -170,3 +173,27 @@ class ContentOrderView(CsrfExemptMixin, JsonRequestResponseMixin, View):
             Content.objects.filter(id=id,
                                    module__course__owner=request.user).update(order=order)  # update content order
         return self.render_json_response({'saved': 'OK'})
+
+
+class CourseListView(TemplateResponseMixin, View):
+    model = Course
+    template_name = 'courses/course/list.html'
+
+    def get(self, request, subject=None):
+        subjects = Subject.objects.annotate(
+            # получение всех предметов и подсчет к каждому какое кол-во курсов по нему есть
+            total_courses=Count('courses'))
+        courses = Course.objects.annotate(  # все курсы и подсчет к каждому сколько у него модулей
+            total_modules=Count(
+                'modules'))  # считаем эту бредятину чтобы потому можно было обратиться {{ course.total_modules }}
+        if subject:  # если в запрос передали предмет
+            subject = get_object_or_404(Subject, slug=subject)
+            courses = courses.filter(subject=subject)  # фильтрация курсов только по указанному предмету
+        return self.render_to_response({'subject': subject,
+                                        'subjects': subjects,
+                                        'courses': courses})
+
+
+class CourseDetailView(DetailView):
+    model = Course  # в контекст шаблона автоматически передастся объект данной модели под именем object
+    template_name = 'courses/course/detail.html'

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if subject %}
+    Курсы по предмету - "{{ subject.title }}"
+  {% else %}
+    Курсы
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <h1>
+    {% if subject %}
+      Курсы по предмету - "{{ subject.title }}"
+    {% else %}
+      Курсы
+    {% endif %}
+  </h1>
+  <div class="contents">
+    <h3>Предметы</h3>
+    <ul id="modules">
+      <li {% if not subject %}class="selected"{% endif %}>
+        <a href="{% url 'course_list' %}">Все предметы</a>
+      </li>
+      {% for s in subjects %}
+        <li {% if subject == s %}class="selected"{% endif %}>
+          <a href="{% url 'course_list_subject' s.slug %}">
+            {{ s.title }}
+            <br />
+            <span>
+              {% if s.total_courses > 4 or s.total_courses == 0 %}
+                {{ s.total_courses }} Курсов
+              {% elif s.total_courses == 1 %}
+                {{ s.total_courses }} Курс
+              {% else %}
+                {{ s.total_courses }} Курса
+              {% endif %}
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="module">
+    {% for course in courses %}
+      {% with subject=course.subject %}
+        <h3>
+          <a href="{% url 'course_detail' course.slug %}">{{ course.title }}</a>
+        </h3>
+    <p>
+      <a href="{% url 'course_list_subject' subject.slug %}">{{ subject }}</a>.
+        Модулей - {{ course.total_modules }}.
+        Автор - {{ course.owner.username }}
+    </p>
+    {% endwith %}
+  {% endfor %}
+  </div>
+{% endblock %}
