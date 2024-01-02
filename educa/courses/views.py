@@ -14,6 +14,7 @@ from django.db.models import Count
 from .models import Subject
 from django.views.generic.detail import DetailView
 from students.forms import CourseEnrollForm
+from django.core.cache import cache
 
 
 class OwnerMixin:  # mixin owner`а
@@ -181,15 +182,27 @@ class CourseListView(TemplateResponseMixin, View):
     template_name = 'courses/course/list.html'
 
     def get(self, request, subject=None):
-        subjects = Subject.objects.annotate(
-            # получение всех предметов и подсчет к каждому какое кол-во курсов по нему есть
-            total_courses=Count('courses'))
-        courses = Course.objects.annotate(  # все курсы и подсчет к каждому сколько у него модулей
+        subjects = cache.get('all_subjects')  # получаем subjects по кэшу
+        if not subjects:  # если не найдено (None) - задаем и кешируем
+            subjects = Subject.objects.annotate(
+                # получение всех предметов и подсчет к каждому какое кол-во курсов по нему есть
+                total_courses=Count('courses'))
+            cache.set('all_subjects', subjects)
+        all_courses = Course.objects.annotate(  # все курсы и подсчет к каждому сколько у него модулей
             total_modules=Count(
                 'modules'))  # считаем эту бредятину чтобы потому можно было обратиться {{ course.total_modules }}
         if subject:  # если в запрос передали предмет
             subject = get_object_or_404(Subject, slug=subject)
-            courses = courses.filter(subject=subject)  # фильтрация курсов только по указанному предмету
+            key = f'subject_{subject.id}_courses'
+            courses = cache.get(key)
+            if not courses:
+                courses = courses.filter(subject=subject)  # фильтрация курсов только по указанному предмету
+                cache.set(key, courses)
+        else:
+            courses = cache.get('all_courses')
+            if not courses:
+                courses = all_courses
+                cache.set('all_courses', courses)
         return self.render_to_response({'subject': subject,
                                         'subjects': subjects,
                                         'courses': courses})
@@ -202,5 +215,5 @@ class CourseDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['enroll_form'] = CourseEnrollForm(  # передаем в контекст шаблона enroll_form как форму
-            initial={'course':self.object})  # значение course сразу будет содержать текущий курс (форма же невидимая)
+            initial={'course': self.object})  # значение course сразу будет содержать текущий курс (форма же невидимая)
         return context
