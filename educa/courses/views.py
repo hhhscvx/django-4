@@ -13,6 +13,7 @@ from braces.views import CsrfExemptMixin, JsonRequestResponseMixin
 from django.db.models import Count
 from .models import Subject
 from django.views.generic.detail import DetailView
+from students.forms import CourseEnrollForm
 
 
 class OwnerMixin:  # mixin owner`а
@@ -197,3 +198,9 @@ class CourseListView(TemplateResponseMixin, View):
 class CourseDetailView(DetailView):
     model = Course  # в контекст шаблона автоматически передастся объект данной модели под именем object
     template_name = 'courses/course/detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['enroll_form'] = CourseEnrollForm(  # передаем в контекст шаблона enroll_form как форму
+            initial={'course':self.object})  # значение course сразу будет содержать текущий курс (форма же невидимая)
+        return context

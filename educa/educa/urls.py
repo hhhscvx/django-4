@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('course/', include('courses.urls')),
     path('', CourseListView.as_view(), name='course_list'),  # на главной странице теперь будет список курсов
+    path('students/', include('students.urls')),
 ]
 
 if settings.DEBUG:
