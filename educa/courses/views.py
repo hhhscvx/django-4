@@ -196,7 +196,7 @@ class CourseListView(TemplateResponseMixin, View):
             key = f'subject_{subject.id}_courses'
             courses = cache.get(key)
             if not courses:
-                courses = courses.filter(subject=subject)  # фильтрация курсов только по указанному предмету
+                courses = all_courses.filter(subject=subject)  # фильтрация курсов только по указанному предмету
                 cache.set(key, courses)
         else:
             courses = cache.get('all_courses')
