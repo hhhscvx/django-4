@@ -10,10 +10,11 @@
   <div id="header">
     <a href="/" class="logo">Educa</a>
     <ul class="menu">
+      <li style="float: left; margin-right: 10px; margin-top: 5px;"><a href="{% url 'student_course_list' %}">Мои курсы</a></li>
       {% if request.user.is_authenticated %}  <!-- объект User. Встроено через middleware -->
-        <li><a href="{% url 'logout' %}">Выйти</a></li>
+        <li style="float: right; margin-top: 5px;"><a href="{% url 'logout' %}">Выйти</a></li>
       {% else %}
-        <li><a href="{% url 'login' %}">Войти</a></li>
+        <li style="float: right; margin-top: 5px;"><a href="{% url 'login' %}">Войти</a></li>
       {% endif %}
     </ul>
   </div>
