@@ -1,15 +1,15 @@
-FROM python:3.10.12
+# Pull official base Python Docker image
+FROM python:3.10.6
 
-# Задать переменные среды
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Задать рабочий каталог
+# Set work directory
 WORKDIR /code
 
 # Install dependencies
-RUN pip install --upgrade pip setuptools
-RUN apt-get pudate && apt-get install -y build-essential python3-dev libpcre3 libpcre3-dev
+RUN pip install --upgrade pip
 COPY requirements.txt /code/
 RUN pip install -r requirements.txt
 

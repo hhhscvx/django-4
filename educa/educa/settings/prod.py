@@ -7,7 +7,7 @@ ADMINS = [
     ("Antonio M", "email@mydomain.com"),
 ]
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.educaproject.com']
 
 DATABASES = {
     "default": {
@@ -22,3 +22,7 @@ DATABASES = {
 REDIS_URL = "redis://cache:6379"
 CACHES["default"]["LOCATION"] = REDIS_URL
 CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [REDIS_URL]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True # cookie и csrf только по https
+SECURE_SSL_REDIRECT = True # http запросы будут redirect на https
